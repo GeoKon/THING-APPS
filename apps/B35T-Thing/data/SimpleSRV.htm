@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>SimpleSRV</title>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<style type="text/css">
+
+body, h2 {text-align:center;}
+
+table th {font-weight: bold;}
+table th, table td 
+{  border: 1px solid #ccc;
+  padding: 6px 13px;
+}
+table tr {
+  border-top: 1px solid #ccc;
+  background-color: #fff;
+}
+table tr:nth-child(2n) {
+  background-color: #f8f8f8;
+}
+</style>
+</head>
+
+<body>
+<h2 id="simplesrv-endpoints">SimpleSRV Endpoints</h2>
+<p><strong> Inline endpoints </strong></p>
+
+<table align="center">
+	<thead>
+	<tr>
+	<th>Endpoint</th>
+	<th>Function      </th>
+	</tr>
+	</thead>
+	<tbody>
+	<tr>
+	<td><code>/restart, /reset</code></td>
+	<td>Restarts the processor  </td>
+	</tr>
+	<tr>
+	<td><code>/status</code></td>
+	<td>Displays in json format SSID, and PWD</td>
+	</tr>
+	<tr>
+	<td><code>/trace</code></td>
+	<td>Displays in json format the serial port trace</td>
+	</tr>
+	<tr>
+	<td><code>/set?trace={value}</code></td>
+	<td>Sets trace to specific value REQUEST, ARGS, FILEIO, JSON, or ACTIONS </td>
+	</tr>
+	<tr>
+	<td><code>/dir</code></td>
+	<td>Displays (in HTML)  directory of all files</td>
+	</tr>
+	<tr>
+	<td><code>/eep</code></td>
+	<td>Displays HTML the WiFi EEPROM parameters</td>
+	</tr>
+	<tr>
+	<td><code>/ed?delete={fname}</code></td>
+	<td>Deletes specified file</td>
+	</tr>
+	<tr>
+	<td><code>/ed?new={fname}</code></td>
+	<td>Creates a new file</td>
+	</tr>
+	<tr>
+	<td><code>/upload</code></td>
+	<td>Uploads a file (overides previous one)</td>
+	</tr>
+	<tr>
+	<td><code>/favicon</code></td>
+	<td>Your favorite icon</td>
+	</tr>
+	</tbody>
+</table>
+
+<p><strong> Endpoints requiring .htm files </strong></p>
+<table align="center">
+	<thead>
+	<tr>
+		<th>Endpoint</th>
+		<th>Function      </th>
+	</tr>
+	</thead>
+	<tbody>
+	<tr>
+		<td><code>/edit</code></td>
+		<td>Invokes an interactive editor of all files in the file system</td>
+	</tr>
+	<tr>
+		<td><code>/setAP.htm</code></td>
+		<td>Sets STA WiFi credentials</td>
+	</tr>
+	<tr>
+		<td><code>/webcli.htm</code></td>
+		<td>Invokes the Web CLI </td>
+	</tr>
+	<tr>
+		<td><code>/index.htm</code></td>
+		<td>Application specific screen with pointers to other pages</td>
+	</tr>
+	</tbody>
+</table>
+<h2>Goto <a href="/">ROOT</a> | <a href="index.htm">INDEX</a></h2>
+</body>
+</html>

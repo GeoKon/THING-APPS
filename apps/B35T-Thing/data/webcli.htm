@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html>
+<title>
+	WEB CLI
+</title>
+
+	<style>
+		body {text-align: center;}
+		input {font-size: 80%;}
+		button {text-align:center; font-size: 80%;}
+		textarea {text-align:left; font-size: 120%;}
+
+	</style>
+	
+<body onload="fetchData();">
+
+	<h1>Web CLI</h1>
+
+		<form method="get" action="/webcli.htm">
+		<h2>Enter command below<br>
+			<input id="idcmd" size="32" type="text" name="cmd" value="">	
+			<button type="submit">SEND</button>
+		</h2>
+		</form>
+		<br/>
+
+		<a href="/webcli.htm?cmd=h"><button>HELP (List of Commands)</button></a>
+		<a href="/webcli.htm?cmd=eprint"><button>EEP (WiFi Parms)</button></a>
+		<br/>
+		<br/>
+		<h2>Response:</h2>		
+		<textarea id="idrsp" rows=20 cols=70 wrap="hard"></textarea>
+
+	<h2>Goto <a href="/">ROOT</a> | <a href="index.htm">INDEX</a></h2>
+
+	<script>
+		var simul = true;
+		var obj = "response line1\r\nresponse line2\r\n";
+    
+		function fetchData()
+		{
+			simul = !(document.location.host);
+			if( simul )
+				handler();
+			else
+			{
+				var request = new XMLHttpRequest();
+				request.onload = handler;
+				request.open('GET', '/clirsp');
+				request.send();
+			}
+		}
+		function handler()
+		{
+			if( (this.status == 200) && (simul== false ) ) 
+			{
+				//obj = JSON.parse( this.responseText );
+				obj = this.responseText;
+				document.getElementById("idrsp").innerHTML = obj;
+			}
+			if( simul ) // random data changes
+				document.getElementById("idrsp").innerHTML = obj;  
+		}
+		
+	</script>
+
+</body>
+</html>

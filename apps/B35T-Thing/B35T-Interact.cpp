@@ -1,13 +1,9 @@
-// -------------- DEPENDENCIES FROM LIBRARIES ----------------
-
-	#include <ESP8266WiFi.h>
-    #include <nodeClass.h>    
-    #include <eepClass.h>
-    #include <oledClass.h>
+// ------------------------ Include common to all app modules -----------------------
     
-	#include <owonClass.h>
-	#include "B35TInteract.h"
-  
+    #include "B35T-Thing.h"   
+
+    extern CPU cpu;         // use main globals from main program
+
 // ---------------------------------------------- OLED SHOW -------------------------------------------------
 ThingUO tuo;
 void show( oled_t code, int arg )
@@ -17,7 +13,7 @@ void show( oled_t code, int arg )
 static const char *echo( const char *s )
 {
     if( isalnum( *s ) )
-        PR( s );    // print with /r/n
+        PR( s );            // print with /r/n
     else
         PR( s+1 );
     return s;
@@ -26,7 +22,7 @@ static const char *echo( const char *s )
 void ThingUO::showBase( oled_t code, int arg )
 {
     IPAddress ip;
-    static int ap_mode;
+    static int ap_mode;	// 0=CLI, 1=STA, 2=AP
     
     switch( code )
     {
@@ -38,47 +34,76 @@ void ThingUO::showBase( oled_t code, int arg )
             break;
         
         case SCREEN_WAITFOR_CLI:                // ------------------- requires delay in sec   
-            oled.dsp( 0, "\vSELECT CLI");
-            oled.dsp( 2, "\vwithin %dsec", arg);
+            oled.dsp( 0, "\vCLI: PRESS CR");
+            oled.dsp( 2, "\v AP: BUTTON");
+			oled.dsp( 5, "\vwithin %02d sec", arg);
             // 6th line displaying progress
-            PF("For CLI, press FLASH within %d sec\r\n", arg );
+            PF("For CLI press RETURN. For AP Mode press button. Do it within %d sec\r\n", arg );
             break;
                            
+        case SCREEN_TIMEOUT:                   // ----------- requires 2nd argument 'count' 
+            oled.dsp( 5, 7, "\v %02d", arg );    
+            PF(".");
+            // 6th line displaying progress
+            break;
+            
+        case SCREEN_CLI_MODE:
+		    oled.clearDisplay();
+			oled.dsp( 3,0, "\bCLI MODE" );
+			ap_mode = 0;
+			PF("\r\nCLI MODE. Press h for help\r\n" );
+			break;
+
+        case SCREEN_STA_MODE:
+		    oled.clearDisplay();
+			oled.dsp( 3,0, "\bSTA MODE" );
+			ap_mode = 1;
+			PF("\r\nSTA MODE. User Thinker.io or Browser\r\n" );
+			break;
+			
+		case SCREEN_AP_MODE:
+		    oled.clearDisplay();
+			oled.dsp( 3,0, "\bAP MODE" );
+			ap_mode = 2;
+			PF("\r\nSTA MODE. User Thinker.io or Browser\r\n" );
+			break;
+		
         case SCREEN_LOOP_VALUES:
             showLoopValues();
             break;
 
-        case SCREEN_CLI_MODE:                    
-            oled.clearDisplay();
-            oled.dsp(0,0, echo("\bCLI MODE"));
-            PR("Serial CLI Mode");
-            break;
-       
-        case UPDATE_PROGRESS:                   // ----------- requires 2nd argument 'count' 
-            oled.dsp( 3, 13, "\a%2d", arg );    
-            // 6th line displaying progress
-            break;
-            
-        case SCREEN_CONNECT_MODE:               // ----------- requires 2nd argument 'mode' 
-            oled.clearDisplay();
-            oled.dsp(0,0, echo(arg?"\bAP MODE":"\bSTA MODE"));
-           
-            ap_mode = arg;  // define static variable. Used by LOOP
-            break;
-        
-        case SCREEN_CLEAR:
-            oled.clearDisplay();
+        case SCREEN_LOOP_READY:
+            if( ap_mode == 0 )
+				break;
+			oled.clearDisplay();
+			if( ap_mode == 1 )
+				PR("Use Thinker.io or Browser");
+			else
+				PR("Select WiFi SSID: GKE_AP");
             break;
 
         case SCREEN_LOOP_STATUS:
             //oled.dsp( 0, 0, "\v%s\r", !tm.getDateString() );
-        
-            ip=ap_mode? WiFi.softAPIP() : WiFi.localIP();
-            
+			char *md;
+			
+            if( ap_mode == 1 )
+			{
+				ip = WiFi.localIP();
+				md = "STA";
+			}	
+			else if( ap_mode == 2 )
+			{
+				ip = WiFi.softAPIP();
+				md = "AP";
+			}	
+			else
+			{
+				ip[0]=ip[1]=ip[2]=ip[3]=0;
+				md = "CLI";
+			}	
             oled.dsp( 0, 0, "\a%d.%d.%d.%d", ip[0],ip[1],ip[2],ip[3] );
-            
-            oled.dsp( 1, 0, ap_mode?"\a AP":"\aSTA");
-            oled.dsp( 1, 3, " Port %d", eep.parm.port );
+            oled.dsp( 1, 0, md );
+            oled.dsp( 1, 3, " Port:%d", eep.wifi.port );
             
             //oled.dsp( 2, 0, "\a%s\r", !tm.getTimeString() );
             oled.dsp( 3, 0, "\aRSSI %ddBm", WiFi.RSSI() );
@@ -93,11 +118,10 @@ void ThingUO::showBase( oled_t code, int arg )
             break;
     }
 }
-
 void ThingUO::flipLoopScreen()
 {
     screen_state = (++screen_state) % screen_count;  // 0, 1, or 2
-    cpu.printf("Toggled to %d\r\n", screen_state );
+    PF("Toggled to %d\r\n", screen_state );
     
     if( screen_state )
         oled.clearDisplay();    /// also turns ON
