@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Switch Parameters</title>
+	<style>
+		body {text-align: center;}
+		input {text-align:center;}
+	</style>
+</head>
+
+<body onload="fetchData();">
+
+	<form method="get" action="/setparms.htm">
+	<h2>Enter DevID<br/>
+		<input id="iddevid" type="text" name="devid" value=""><br/><br/>	
+
+		Enter UserID<br/>
+		<input id="iduserid" type="text" name="userid" value=""><br/><br/>
+
+		Enter Alternative Control<br/>
+		(0=BUTTON, 1=GPIO14, 2=GPIO04)<br/>
+		<input id="idaltcntr" type="text" size="1" name="altcntr" value=""><br/><br/>
+
+		<button type="submit">OK</button>
+	</h2>
+  	</form>
+	<a href="index.htm">Goto INDEX</a>
+
+
+	<script>
+		var simul = true;
+		var obj1 = {"devid": "SFGKExx", "userid": "ROOMxxx", "altcntr": "0" };
+    
+		function fetchData()
+		{
+			simul = !(document.location.host);
+			if( simul )
+				handler();
+			else
+			{
+				var request = new XMLHttpRequest();
+				request.onload = handler;
+				request.open('GET', '/parms');
+				request.send();
+			}
+		}
+		function handler()
+		{
+			if( (this.status == 200) && (simul== false ) ) 
+				obj = JSON.parse( this.responseText );
+			else
+				obj = obj1; // use simulation object
+			
+			document.getElementById("iddevid").value = obj.devid;
+			document.getElementById("iduserid" ).value = obj.userid;
+			document.getElementById("idaltcntr" ).value = obj.altcntr;
+		}
+		
+	</script>
+
+</body>
+</html>

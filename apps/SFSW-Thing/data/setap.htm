@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>WiFi Credentials</title>
+	<style>
+		body {text-align: center;}
+		input {text-align:center;}
+	</style>
+</head>
+
+<body onload="fetchData();">
+
+<!--	
+	<h3>Current SSID<br/>
+		<label id="idssid"></label><br/>
+		<br/>
+		Current  PWD<br/>
+		<label id="idpwd"></label>
+	</h3>
+-->	
+	<form method="get" action="/setap.htm">
+	<h2>Enter new SSID<br/>
+		<input id="idssid" type="text" name="ssid" value=""><br/><br/>	
+
+		Enter new PWD<br/>
+		<input id="idpwd" type="text" name="pwd" value=""><br/><br/>
+		<button type="submit">OK</button>
+	</h2>
+  	</form>
+	<a href="index.htm">Goto INDEX</a>
+
+
+	<script>
+		var simul = true;
+		var obj = {"ssid": "demo_SSID", "pwd": "demo_PWD"};
+    
+		function fetchData()
+		{
+			simul = !(document.location.host);
+			if( simul )
+				handler();
+			else
+			{
+				var request = new XMLHttpRequest();
+				request.onload = handler;
+				request.open('GET', '/status');
+				request.send();
+			}
+		}
+		function handler()
+		{
+			if( simul ) 
+			{
+				document.getElementById("idssid").value = obj.ssid;
+				document.getElementById("idpwd" ).value = obj.pwd;
+			}
+			if( (this.status == 200) && (simul== false ) ) 
+			{
+				obj = JSON.parse( this.responseText );
+				document.getElementById("idssid").value = obj.ssid;
+				document.getElementById("idpwd" ).value = obj.pwd;
+			}
+
+		}
+		
+	</script>
+
+</body>
+</html>

@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html>
+<title>
+	WEB CLI
+</title>
+
+	<style>
+	h1, h2, p {text-align: center;}
+	h1, h2 {font-size: 250%;}
+	input, button, textarea {font-size: 150%; }
+	p {font-size: 200%;}
+	</style>
+	
+<body onload="fetchData();">
+<div align="center">
+	<h1>Web CLI</h1>
+		<form method="get" action="/webcli.htm">
+		<h2>
+		Command:<input id="idcmd" size="32" type="text" name="cmd" value="">	
+		</h2>
+		<button type="submit">SEND</button>
+		
+		</form>
+		<br/>
+
+		<a href="/webcli.htm?cmd=h"><button>HELP (Commands)</button></a>
+		<a href="/webcli.htm?cmd=eep"><button>EEP (WiFi Parms)</button></a>
+		<a href="/webcli.htm?cmd=ushow"><button>USHOW (UPS Parms)</button></a>
+		<br/>
+		<a href="/webcli.htm?cmd=volts+10"><button>Volts 10</button></a>
+		<a href="/webcli.htm?cmd=amps+50"><button>Amps 50</button></a>
+		<a href="/webcli.htm?cmd=amps"><button>No Simulation</button></a>
+		<br/>
+		<br/>
+		<h2>Response:</h2>		
+		<textarea id="idrsp" rows=20 cols=60 wrap="hard"></textarea>
+
+	<p>
+	<a href="index.htm">Goto INDEX</a> | <a href="engang.htm">Display V,A meters</a>
+</p>
+
+	<script>
+		var simul = true;
+		var obj = "response line1\r\nresponse line2\r\n";
+    
+		function fetchData()
+		{
+			simul = !(document.location.host);
+			if( simul )
+				handler();
+			else
+			{
+				var request = new XMLHttpRequest();
+				request.onload = handler;
+				request.open('GET', '/clirsp');
+				request.send();
+			}
+		}
+		function handler()
+		{
+			if( (this.status == 200) && (simul== false ) ) 
+			{
+				//obj = JSON.parse( this.responseText );
+				obj = this.responseText;
+				document.getElementById("idrsp").innerHTML = obj;
+			}
+			if( simul ) // random data changes
+			{
+				document.getElementById("idrsp").innerHTML = obj;  
+			}
+		}
+		
+	</script>
+
+</body>
+</html>
