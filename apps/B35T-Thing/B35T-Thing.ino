@@ -10,7 +10,6 @@
 #define METER_READING_PERIOD 2                          // seconds. How often to read the meter
 #define METER_DROPBOX_PERIOD 20                         // how often to save to dropbox
 #define OLED_DISPLAY_PERIOD  2                          // seconds.
-//#define ALERT_REPEAT_PERIOD (60*METER_READING_PERIOD)   // seconds. How long to wait for IFTTT repeats
 
 // ------------------------ Include common to all app modules -----------------------
 
