@@ -1,3 +1,8 @@
+// ---------------------------------------------------------------------------------
+// Copyright (c) George Kontopidis 1990-2019 All Rights Reserved
+// You may use this code as you like, as long as you attribute credit to the author.
+// ---------------------------------------------------------------------------------
+
 #ifndef B35T-THING_H
 #define B35T-THING_H
 

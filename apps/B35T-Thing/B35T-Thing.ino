@@ -1,3 +1,8 @@
+// ---------------------------------------------------------------------------------
+// Copyright (c) George Kontopidis 1990-2019 All Rights Reserved
+// You may use this code as you like, as long as you attribute credit to the author.
+// ---------------------------------------------------------------------------------
+
 //#define _DEBUG_ 1
 #define _DISABLE_TLS_
 

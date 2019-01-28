@@ -1,10 +1,13 @@
+// ---------------------------------------------------------------------------------
+// Copyright (c) George Kontopidis 1990-2019 All Rights Reserved
+// You may use this code as you like, as long as you attribute credit to the author.
+// ---------------------------------------------------------------------------------
 
 #include "B35T-Thing.h" 
 
 // -------------- Exported by main program ONLY WHEN USING AP MODE --------------------
 
     extern CPU cpu;
-    extern OLED oled;
     extern EXE exe;
     extern ModuloTic owonTic;
     extern ModuloTic oledTic;
