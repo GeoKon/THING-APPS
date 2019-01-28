@@ -4,7 +4,7 @@
 // -------------- Exported by main program ONLY WHEN USING AP MODE --------------------
 
     extern CPU cpu;
-    extern OLED oled;
+    //extern OLED oled;
     extern EXE exe;
     extern ModuloTic owonTic;
     extern ModuloTic oledTic;
