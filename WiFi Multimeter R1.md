@@ -1,10 +1,10 @@
 WiFi Multimeter
 ---------------
 
-###What it does
+### What it does
 Measures the usual electrical quantities and makes them available to WiFi Clients (laptops, mobile phones, tablets) near the multimeter or anywhere on the Internet.
 
-###Use Cases & Applications
+### Use Cases & Applications
 - Measuring high voltage or current away from hazardous circuits
 - Using your tablet to see measurements more conveniently
 - Home automation: measuring anything and watching it remotely
@@ -22,7 +22,7 @@ Measures the usual electrical quantities and makes them available to WiFi Client
 
 ![](https://i.imgur.com/pdy9suU.gif)
 
-###User Modes of Operation
+### User Modes of Operation
 There are three modes of operation of the Gateway:
 - 	CLI Mode
 - 	AP Mode
