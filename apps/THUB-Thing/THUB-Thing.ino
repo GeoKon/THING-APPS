@@ -1,6 +1,8 @@
 // ---------------------------------------------------------------------------------
 // Copyright (c) George Kontopidis 1990-2019 All Rights Reserved
 // You may use this code as you like, as long as you attribute credit to the author.
+//
+// Brief documentation can be found in THUB-Thing.md
 // ---------------------------------------------------------------------------------
 
 #include <ESP8266WiFi.h>
@@ -12,7 +14,6 @@
 #include <timeClass.h>          // Used for ModuloTic()
 #include <prsClass.h>           // parser class to decode JSON
 #include <eepClass.h>           // eeprom parameters for WiFi
-#include <eepTable.h>
 
 #define USERNAME "GeoKon"
 #define DEVICE_ID "THERMOSTATS"
@@ -32,7 +33,8 @@
     bool parseEng( char *text );
     bool parseRdt( char *text );
     bool get_client();    
-    void read_client();
+    void read_temp();
+    void read_humidity();
     void sendtoDropbox();
         
 // ---------------------------- Globals -------------------------------------
@@ -45,23 +47,19 @@
     PRS pr( 100 );                  // working buffer for parser
     ModuloTic tic(SCAN_INTERVAL);   // how often to poll URLs
 
-    char *homeurl = "http://192.168.0.";    // to be completed wuth IP3
+    char *homeurl = "http://192.168.0.";    // to be completed with IP3
 
-    static struct state_t       // global parameters
+    static struct state_t       // Global parameters
     {
-        int trace;
-        int totalscans;         // total scans
-
-        int dboxTm;
-        bool dboxOn;
-        
+        int trace;              // debug, serial port tracing mask
+        int totalscans;         // Total number of querying the list of thermostats
+        bool dboxOn;            // turn ON or OFF Dropbox storage
+        int dboxTm;             // how ofter to save to Dropbox 
         int scanindex;          // 0, 1, ..., modulo-1
         
     } my = { 7, 0, DROPBOX_PERIOD, false, 0 };
 
-    static void nextScan() { my.scanindex++; if( my.scanindex >= SCAN_COUNT ) my.scanindex=0; }
-    
-    static struct rdt_t         // per URL measurements
+    static struct rdt_t         // Table of structures, one per Thermostat
     {
         const char *label;      // label for this sensor
         const char *labIP3;     // label for IP3 of this sensor
@@ -72,25 +70,22 @@
         int   errorcount;       // number of not succcesful readings
         void (*handler)();      // function to call to handle parsing
         
-    } rd[ SCAN_COUNT ] = {
-                            { "OfficeTemp",     "OfficeIP3",     75, "/tstat",           0.0, 0.0, 0, read_temp },
-                            { "Humidity",       "HumidityIP3",   75, "/tstat/humidity",  0.0, 0.0, 0, read_humidity },
-                            { "BackYardTemp",   "BackYardIP3",   61, "/tstat",           0.0, 0.0, 0, read_temp },
-                            { "PatioTemp",      "PatioIP3",      63, "/tstat",           0.0, 0.0, 0, read_temp }
-                         };
+    } rd[ SCAN_COUNT ] = 
+    {
+        { "OfficeTemp",     "OfficeIP3",     75, "/tstat",           0.0, 0.0, 0, read_temp },
+        { "Humidity",       "HumidityIP3",   75, "/tstat/humidity",  0.0, 0.0, 0, read_humidity },
+        { "BackYardTemp",   "BackYardIP3",   61, "/tstat",           0.0, 0.0, 0, read_temp },
+        { "PatioTemp",      "PatioIP3",      63, "/tstat",           0.0, 0.0, 0, read_temp }
+    };
 
-    struct myparm_t
+    struct myparm_t             // EEPROM User Parameters
     {
         int ip3[ SCAN_COUNT ];  
 
     } myeep, defaults = { 75, 75, 61, 63 };
     #define FORMAT "OfficeIP3:%d HumidityIP3:%d BackyardIP3:%d ParioIP3:%d\r\n"
 
-// Expected response {"state":"DISCH", "time":"06:26:43", "volts":13.500, "amps":-165.1, "watts":-2229, "totalWs":-987815808}
-// see client here: https://github.com/esp8266/Arduino/blob/dd81336b79ddf15925876b983af13816d9d5807e/libraries/ESP8266HTTPClient/src/ESP8266HTTPClient.cpp
-// tutorial: https://techtutorialsx.com/2016/07/21/esp8266-post-requests/
-
-// ------------------------ elapsed time class ------------------------------
+// ------------------------ Utility class: Elapsed time ---------------------------------
     class ELAPSE
     {
     private: 
@@ -108,6 +103,10 @@
                 PF("[%12s] ΔT=%5ldms ParsErr=%3d RCV=%s\r\n", rd[my.scanindex].label, millis()-T0, err, rcv );
         }
     } elapse;
+
+    // Convenient function to advance the index count for the structure below
+    static void nextScan() { my.scanindex++; if( my.scanindex >= SCAN_COUNT ) my.scanindex=0; }
+
 // -------------------------------- setup() ---------------------------------
 void setup() 
 {
@@ -174,13 +173,13 @@ void setup()
     };
     PR("Entering Loop");
 }
-// -------------------------------- loop() ---------------------------------
 
+// ------------------------------ main loop() ---------------------------------
 void loop() 
 {
-    static bool ok;
+    static bool ok; // set by get_client() but used in a subsequent calls by handlers()
         
-    if (WiFi.status() != WL_CONNECTED) 
+    if (WiFi.status() != WL_CONNECTED)      // handles automatic reconnection to WiFi
     {
         PR( "Waiting for WiFi Connection...\r\n");
         delay(5000);
@@ -190,7 +189,6 @@ void loop()
     {
         nextScan();                         // prep for next scan 0 ... SCAN_COUNT-1
         my.totalscans++;                    // if error, does not proceed with parsing 
-        
         ok = get_client();                  // GETs URL; increments [my.scanindex].errorcount
     }
     if( ok )
@@ -202,6 +200,7 @@ void loop()
     }
     thing.handle();
 }
+// -------------------------------- makes REST calls -----------------------------------
 bool get_client()
 {
     char url[80];     // URL construction
@@ -219,6 +218,7 @@ bool get_client()
     rd[ my.scanindex ].errorcount++;
     return false;
 }
+// ------------------------- handlers to FETCH & PARSE data ----------------------------
 void read_temp()
 {
     elapse.start();
@@ -253,6 +253,7 @@ void read_humidity()
     if( ERROR )
         rd[ my.scanindex ].errorcount++;
 }
+// ------------------------- encaptulate Dropbox handling ----------------------------
 void sendtoDropbox()
 {
     static int count = 0; 
